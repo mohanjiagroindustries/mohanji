@@ -473,6 +473,8 @@ const CheckoutModal = ({ cart, priceMode, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [orderId, setOrderId] = useState(null);
+  const [finalTotal, setFinalTotal] = useState(0);
+  const [finalItemCount, setFinalItemCount] = useState(0);
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   const handlePlaceOrder = () => {
@@ -486,93 +488,95 @@ const CheckoutModal = ({ cart, priceMode, onClose, onSuccess }) => {
   };
 
   const handleConfirmPayment = async () => {
-  setLoading(true);
-  setError("");
-  try {
-    const orderRes = await axios.post(`${API}/payment/create-order`, {
-      amount: total,
-      customerName: form.customerName,
-      phone: form.phone,
-      address: form.address,
-      city: form.city,
-      pincode: form.pincode,
-      priceMode,
-      totalAmount: total,
-      items: cart.map((item) => ({
-        productId: item._id,
-        productName: item.name,
-        quantity: item.qty,
-        unit: item.unit,
-        pricePerUnit: item.price,
-        totalPrice: item.price * item.qty,
+    setLoading(true);
+    setError("");
+    try {
+      const orderRes = await axios.post(`${API}/payment/create-order`, {
+        amount: total,
+        customerName: form.customerName,
+        phone: form.phone,
+        address: form.address,
+        city: form.city,
+        pincode: form.pincode,
         priceMode,
-      })),
-    });
-    const razorpayOrder = orderRes.data;
+        totalAmount: total,
+        items: cart.map((item) => ({
+          productId: item._id,
+          productName: item.name,
+          quantity: item.qty,
+          unit: item.unit,
+          pricePerUnit: item.price,
+          totalPrice: item.price * item.qty,
+          priceMode,
+        })),
+      });
+      const razorpayOrder = orderRes.data;
 
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-      amount: razorpayOrder.amount,
-      currency: "INR",
-      name: "Mohanji Agro Industries",
-      description: "Order Payment",
-      order_id: razorpayOrder.id,
-      redirect: false,
-      retry: { enabled: false },
-      modal: {
-        ondismiss: async () => {
-          await new Promise(r => setTimeout(r, 1500));
-          setStep(3);
-          onSuccess();
-        }
-      },
-      handler: async (response) => {
-        const verifyRes = await axios.post(`${API}/payment/verify`, response);
-        if (verifyRes.data.success) {
-          const saved = await axios.post(`${API}/orders`, {
-            customerName: form.customerName,
-            phone: form.phone,
-            address: form.address,
-            city: form.city,
-            pincode: form.pincode,
-            razorpayPaymentId: response.razorpay_payment_id,
-            priceMode,
-            totalAmount: total,
-            items: cart.map((item) => ({
-              productId: item._id,
-              productName: item.name,
-              quantity: item.qty,
-              unit: item.unit,
-              pricePerUnit: item.price,
-              totalPrice: item.price * item.qty,
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: razorpayOrder.amount,
+        currency: "INR",
+        name: "Mohanji Agro Industries",
+        description: "Order Payment",
+        order_id: razorpayOrder.id,
+        redirect: false,
+        retry: { enabled: false },
+        modal: {
+          ondismiss: async () => {
+            await new Promise((r) => setTimeout(r, 1500));
+            setStep(3);
+            onSuccess();
+          },
+        },
+        handler: async (response) => {
+          const verifyRes = await axios.post(`${API}/payment/verify`, response);
+          if (verifyRes.data.success) {
+            const saved = await axios.post(`${API}/orders`, {
+              customerName: form.customerName,
+              phone: form.phone,
+              address: form.address,
+              city: form.city,
+              pincode: form.pincode,
+              razorpayPaymentId: response.razorpay_payment_id,
               priceMode,
-            })),
-          });
-          setOrderId(saved.data._id);
-          setStep(3);
-          onSuccess();
-        }
-      },
-      prefill: { name: form.customerName, contact: form.phone },
-      theme: { color: "#21421e" },
-    };
+              totalAmount: total,
+              items: cart.map((item) => ({
+                productId: item._id,
+                productName: item.name,
+                quantity: item.qty,
+                unit: item.unit,
+                pricePerUnit: item.price,
+                totalPrice: item.price * item.qty,
+                priceMode,
+              })),
+            });
+            setOrderId(saved.data._id);
+            setStep(3);
+            onSuccess();
+          }
+        },
+        prefill: { name: form.customerName, contact: form.phone },
+        theme: { color: "#21421e" },
+      };
 
-    const rzp = new window.Razorpay(options);
-    rzp.on("payment.failed", () =>
-      setError("Payment failed. Please try again.")
-    );
-    rzp.open();
-    setLoading(false);
-    setTimeout(() => {
-  setStep(3);
-  onSuccess();
-}, 8000); 
-  } catch (err) {
-    setError("Something went wrong. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", () =>
+        setError("Payment failed. Please try again."),
+      );
+      rzp.open();
+      setLoading(false);
+      setTimeout(() => {
+        setFinalTotal(total);
+        setFinalItemCount(cart.length);
+        setStep(3);
+        onSuccess();
+      }, 8000);
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div
@@ -841,8 +845,8 @@ const CheckoutModal = ({ cart, priceMode, onClose, onSuccess }) => {
                   marginBottom: "1rem",
                 }}
               >
-                Your order of <strong>{cart.length} item(s)</strong> totalling{" "}
-                <strong>₹{total}</strong> has been received.
+                Your order of <strong>{finalItemCount} item(s)</strong>{" "}
+                totalling <strong>₹{finalTotal}</strong> has been received.
                 <br />
                 <br />
                 You will receive a <strong>WhatsApp message</strong> from
@@ -858,8 +862,7 @@ const CheckoutModal = ({ cart, priceMode, onClose, onSuccess }) => {
                 }}
               >
                 <p style={{ fontSize: "0.8rem", color: "#666", margin: 0 }}>
-                  Order Ref:{" "}
-                  <strong>{orderId?.slice(-8)?.toUpperCase()}</strong>
+                  Your order has been received and will be processed shortly! 
                 </p>
               </div>
               <button
