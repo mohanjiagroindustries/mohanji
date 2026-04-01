@@ -490,21 +490,39 @@ const CheckoutModal = ({ cart, priceMode, onClose, onSuccess }) => {
     setError("");
     try {
       // 1. Create Razorpay order on backend
-      const orderRes = await axios.post(`${API}/payment/create-order`, {
-        amount: total,
-      });
+const orderRes = await axios.post(`${API}/payment/create-order`, {
+  amount: total,
+  customerName: form.customerName,
+  phone: form.phone,
+  address: form.address,
+  city: form.city,
+  pincode: form.pincode,
+  priceMode,
+  totalAmount: total,
+  items: cart.map((item) => ({
+    productId: item._id,
+    productName: item.name,
+    quantity: item.qty,
+    unit: item.unit,
+    pricePerUnit: item.price,
+    totalPrice: item.price * item.qty,
+    priceMode,
+  })),
+});
       const razorpayOrder = orderRes.data;
 
       // 2. Open Razorpay popup
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: razorpayOrder.amount,
-        currency: "INR",
-        name: "Mohanji Agro Industries",
-        description: "Order Payment",
-        order_id: razorpayOrder.id,
-        redirect: false,
-        handler: async (response) => {
+const options = {
+  key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+  amount: razorpayOrder.amount,
+  currency: "INR",
+  name: "Mohanji Agro Industries",
+  description: "Order Payment",
+  order_id: razorpayOrder.id,
+  redirect: false,  // already added
+  retry: { enabled: false },  // ADD THIS
+  handler: async (response) => {
+
           // 3. Verify on backend
           const verifyRes = await axios.post(`${API}/payment/verify`, response);
           if (verifyRes.data.success) {
