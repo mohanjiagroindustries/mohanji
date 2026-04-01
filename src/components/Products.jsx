@@ -562,6 +562,11 @@ const CheckoutModal = ({ cart, priceMode, onClose, onSuccess }) => {
       setError("Payment failed. Please try again.")
     );
     rzp.open();
+    setLoading(false);
+    setTimeout(() => {
+  setStep(3);
+  onSuccess();
+}, 8000); 
   } catch (err) {
     setError("Something went wrong. Please try again.");
   } finally {
