@@ -1,0 +1,14 @@
+@import "tailwindcss";
+/* Reset default padding/margin */
+* {
+  @apply m-0 p-0 box-border;
+}
+
+.App {
+  @apply w-full min-h-screen overflow-x-hidden bg-[#2e1b2f]; /* full width background */
+}
+
+/* Optional: main content area fix */
+.main-content {
+  @apply w-full max-w-none; /* removes fixed width limits */
+}
