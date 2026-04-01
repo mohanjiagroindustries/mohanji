@@ -503,6 +503,7 @@ const CheckoutModal = ({ cart, priceMode, onClose, onSuccess }) => {
         name: "Mohanji Agro Industries",
         description: "Order Payment",
         order_id: razorpayOrder.id,
+        redirect: false,
         handler: async (response) => {
           // 3. Verify on backend
           const verifyRes = await axios.post(`${API}/payment/verify`, response);
@@ -795,28 +796,63 @@ const CheckoutModal = ({ cart, priceMode, onClose, onSuccess }) => {
             </>
           )}
 
-{step === 3 && (
+          {step === 3 && (
             <div style={{ textAlign: "center", padding: "2rem 1rem" }}>
               <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>🎉</div>
-              <h3 style={{ color: COLORS.PRIMARY, fontSize: "1.5rem", marginBottom: "0.5rem" }}>
+              <h3
+                style={{
+                  color: COLORS.PRIMARY,
+                  fontSize: "1.5rem",
+                  marginBottom: "0.5rem",
+                }}
+              >
                 Order Placed Successfully!
               </h3>
               <p style={{ color: "#555", marginBottom: "0.5rem" }}>
                 Thank you, <strong>{form.customerName}</strong>!
               </p>
-              <p style={{ color: "#777", fontSize: "0.875rem", marginBottom: "1rem" }}>
-                Your order of <strong>{cart.length} item(s)</strong> totalling <strong>₹{total}</strong> has been received.
-                <br /><br />
-                You will receive a <strong>WhatsApp message</strong> from Mohanji Agro Industries confirming the dispatch of your order. 🌿
+              <p
+                style={{
+                  color: "#777",
+                  fontSize: "0.875rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                Your order of <strong>{cart.length} item(s)</strong> totalling{" "}
+                <strong>₹{total}</strong> has been received.
+                <br />
+                <br />
+                You will receive a <strong>WhatsApp message</strong> from
+                Mohanji Agro Industries confirming the dispatch of your order.
+                🌿
               </p>
-              <div style={{ background: COLORS.ACCENT, borderRadius: "10px", padding: "0.75rem", marginBottom: "1.5rem" }}>
+              <div
+                style={{
+                  background: COLORS.ACCENT,
+                  borderRadius: "10px",
+                  padding: "0.75rem",
+                  marginBottom: "1.5rem",
+                }}
+              >
                 <p style={{ fontSize: "0.8rem", color: "#666", margin: 0 }}>
-                  Order Ref: <strong>{orderId?.slice(-8)?.toUpperCase()}</strong>
+                  Order Ref:{" "}
+                  <strong>{orderId?.slice(-8)?.toUpperCase()}</strong>
                 </p>
               </div>
               <button
-                onClick={() => { onSuccess(); onClose(); }}
-                style={{ padding: "0.75rem 2rem", borderRadius: "10px", border: "none", background: COLORS.PRIMARY, color: "#fff", fontWeight: "700", cursor: "pointer" }}
+                onClick={() => {
+                  onSuccess();
+                  onClose();
+                }}
+                style={{
+                  padding: "0.75rem 2rem",
+                  borderRadius: "10px",
+                  border: "none",
+                  background: COLORS.PRIMARY,
+                  color: "#fff",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                }}
               >
                 Done ✓
               </button>
@@ -855,15 +891,17 @@ const BuyNowModal = ({ product, priceMode, onClose, onAddToCart }) => {
   };
 
   if (goToCheckout) {
-  return (
-    <CheckoutModal
-      cart={[cartItem]}
-      priceMode={priceMode}
-      onClose={onClose}
-      onSuccess={() => { onClose(); }} // ✅ closes modal after success
-    />
-  );
-}
+    return (
+      <CheckoutModal
+        cart={[cartItem]}
+        priceMode={priceMode}
+        onClose={onClose}
+        onSuccess={() => {
+          onClose();
+        }} // ✅ closes modal after success
+      />
+    );
+  }
 
   return (
     <div
