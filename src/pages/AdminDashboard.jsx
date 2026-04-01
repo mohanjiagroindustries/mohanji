@@ -216,7 +216,7 @@ const updateStatus = async (id, status) => {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {orders.map(order => (
-                  <div key={order._id} style={{ background: order.status === 'dispatched' ? '#d4edda' : '#fff', borderRadius: '12px', padding: '1.25rem', border: '1px solid #ddd' }}>
+                  <div key={order._id} style={{background: order.status === 'delivered' ? '#e9d5ff' : order.status === 'dispatched' ? '#d4edda' : '#fff', borderRadius: '12px', padding: '1.25rem', border: '1px solid #ddd' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
                       <div>
                         <p style={{ fontWeight: '600', marginBottom: '0.25rem' }}>{order.customerName}</p>
@@ -234,10 +234,10 @@ const updateStatus = async (id, status) => {
     borderRadius: '20px', 
     fontSize: '0.75rem', 
     fontWeight: '600',
-    background: order.status === 'dispatched' ? '#21421e' : order.status === 'sent_to_delivery' ? '#1a6b9a' : '#fef3c7',
-    color: order.status === 'dispatched' ? '#fff' : order.status === 'sent_to_delivery' ? '#fff' : '#92400e'
+    background: order.status === 'delivered' ? '#7c3aed' : order.status === 'dispatched' ? '#21421e' : order.status === 'sent_to_delivery' ? '#1a6b9a' : '#fef3c7',
+color: order.status === 'delivered' ? '#fff' : order.status === 'dispatched' ? '#fff' : order.status === 'sent_to_delivery' ? '#fff' : '#92400e'
   }}>
-    {order.status === 'dispatched' ? 'Dispatched' : order.status === 'sent_to_delivery' ? 'Sent to Delivery' : 'Pending'}
+    {order.status === 'delivered' ? 'Delivered ✅' : order.status === 'dispatched' ? 'Dispatched' : order.status === 'sent_to_delivery' ? 'Sent to Delivery' : 'Pending'}
   </span>
 
   {/* Action: Send to Delivery */}
@@ -262,28 +262,26 @@ const updateStatus = async (id, status) => {
 
   {/* Action: WhatsApp (Fixed the missing <a> tag here) */}
   {order.status === 'dispatched' && (
-    <a 
-      href={`https://wa.me/91${order.phone}?text=${encodeURIComponent(
-        `Hi ${order.customerName}! 🌿 Your order from Mohanji Agro Industries has been dispatched!\n\n` +
-        `Items: ${order.items.map(i => `${i.productName} x${i.quantity} ${i.unit}`).join(', ')}\n` +
-        `Total: ₹${order.totalAmount}\n\nThank you for ordering with us!`
-      )}`}
-      target="_blank" 
+  <>
+    <a href={`https://wa.me/91${order.phone}?text=${encodeURIComponent(
+      `Hi ${order.customerName}! 🌿 Your order from Mohanji Agro Industries has been dispatched!\n\n` +
+      `Items: ${order.items.map(i => `${i.productName} x${i.quantity} ${i.unit}`).join(', ')}\n` +
+      `Total: ₹${order.totalAmount}\n\nThank you for ordering with us!`
+    )}`}
+      target="_blank"
       rel="noopener noreferrer"
-      style={{ 
-        ...btnStyle(false), 
-        fontSize: '0.75rem', 
-        padding: '0.4rem 0.9rem', 
-        background: '#25D366', 
-        color: '#fff', 
-        textDecoration: 'none', 
-        display: 'inline-block',
-        borderRadius: '4px' // Added for visual consistency
-      }}
+      style={{ ...btnStyle(false), fontSize: '0.75rem', padding: '0.4rem 0.9rem', background: '#25D366', color: '#fff', textDecoration: 'none', display: 'inline-block', borderRadius: '4px' }}
     >
       WhatsApp Customer
     </a>
-  )}
+    <button
+      onClick={() => updateStatus(order._id, 'delivered')}
+      style={{ ...btnStyle(true), fontSize: '0.75rem', padding: '0.4rem 0.9rem', background: '#7c3aed' }}
+    >
+      ✅ Order Received by Customer
+    </button>
+  </>
+)}
 </div>
                     </div>
                   </div>

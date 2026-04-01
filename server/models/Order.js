@@ -18,7 +18,7 @@ const orderSchema = new mongoose.Schema({
   totalAmount: { type: Number, required: true },
 utrNumber: { type: String },
 razorpayPaymentId: { type: String },
-  status: { type: String, default: 'pending', enum: ['pending', 'sent_to_delivery', 'dispatched'] },
+  status: { type: String, default: 'pending', enum: ['pending', 'sent_to_delivery', 'dispatched', 'delivered'] },
   priceMode: { type: String, default: 'retail' }
 }, { timestamps: true });
 
